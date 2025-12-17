@@ -102,7 +102,7 @@ int Graph::BFS_shortest_path(size_t start, size_t end) const
 
 		for (size_t neighbor: adj[currentVertex])
 		{
-      if (currentVertex == end)
+      if (neighbor == end)
 			  return dist + 1;
       
 			if (visited[neighbor])
@@ -118,8 +118,6 @@ int Graph::BFS_shortest_path(size_t start, size_t end) const
 
 void Graph::DFS_ITER(size_t start) const
 {
-	std::vector<size_t> result;
-
 	std::vector<bool> visited(V, false);
 
 	std::stack<size_t> s;
@@ -161,26 +159,28 @@ void Graph::DFS_REC(size_t start) const
 	dfs_help_rec(start, visited);
 }
 
-bool Graph::contains_cycle_rec(size_t start, std::vector<bool>& visited, std::vector<bool>& stack) const
+bool Graph::contains_cycle_rec(
+    size_t start,
+    std::vector<bool>& visited,
+    std::vector<bool>& in_stack
+) const
 {
-	if (!visited[start])
-	{
-		visited[start] = true;
-		stack[start] = true;
+    if (!visited[start]) {
+        visited[start] = true;
+        in_stack[start] = true;
 
-		for (int i = 0; i < adj[start].size(); i++)
-		{
-			size_t neihbor = adj[start][i];
+        for (size_t neighbor : adj[start]) {
+            if (!visited[neighbor] && contains_cycle_rec(neighbor, visited, in_stack))
+                return true;
+            else if (in_stack[neighbor])
+                return true;
+        }
+    }
 
-			if (!visited[neihbor] && contains_cycle_rec(neihbor, visited, stack))
-				return true;
-			else if (stack[neihbor])
-				return true;
-		}
-	}
-	stack[start] = false;
-	return false;
+    in_stack[start] = false;
+    return false;
 }
+
 bool Graph::containsCycle() const
 {
 	if (!oriented)
